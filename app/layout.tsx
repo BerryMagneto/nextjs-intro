@@ -21,6 +21,7 @@ export default function RootLayout({
             <a href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">About</a>
             <a href="/projects" className="text-gray-400 hover:text-white text-sm transition-colors">Projects</a>
             <a href="/blog" className="text-gray-400 hover:text-white text-sm transition-colors">Blog</a>
+            <a href="/contact" className="text-gray-400 hover:text-white text-sm transition-colors">Contact</a>
           </div>
         </nav>
         {children}
