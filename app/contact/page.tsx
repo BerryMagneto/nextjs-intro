@@ -8,10 +8,45 @@ export default function Contact() {
   const [message, setMessage] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState({ name: '', email: '', message: '' })
+
+function validate() {
+  const newErrors = { name: '', email: '', message: '' }
+  let valid = true
+
+  if (!name.trim()) {
+    newErrors.name = 'Name is required'
+    valid = false
+  }
+
+  if (!email.trim()) {
+    newErrors.email = 'Email is required'
+    valid = false
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    newErrors.email = 'Enter a valid email address'
+    valid = false
+  }
+  
+  if (!message.trim()) {
+    newErrors.message = 'Message is required'
+    valid = false
+  } else if (message.trim().length < 10) {
+    newErrors.message = 'Message must be at least 10 characters'
+    valid = false
+  }
+  
+  setErrors(newErrors)
+  return valid
+}
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
+
+    if (!validate()) {
+      setLoading(false)
+      return
+    }
 
     const res = await fetch('/api/contact', {
       method: 'POST',
@@ -20,11 +55,7 @@ export default function Contact() {
     })
 
     const data = await res.json()
-
-    if (data.success) {
-      setSubmitted(true)
-    }
-
+    if (data.success) setSubmitted(true)
     setLoading(false)
   }
 
@@ -65,6 +96,7 @@ export default function Contact() {
               className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00BFFF] transition-colors"
               placeholder="Your name"
             />
+            {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-sm text-gray-400">Email</label>
@@ -75,6 +107,7 @@ export default function Contact() {
               className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00BFFF] transition-colors"
               placeholder="your@email.com"
             />
+            {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-sm text-gray-400">Message</label>
@@ -85,6 +118,7 @@ export default function Contact() {
               className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00BFFF] transition-colors resize-none"
               placeholder="Your message..."
             />
+            {errors.message && <p className="text-red-400 text-xs mt-1">{errors.message}</p>}
           </div>
           <button
             type="submit"
