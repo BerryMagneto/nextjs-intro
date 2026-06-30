@@ -8,15 +8,15 @@ interface Post {
   body: string
 }
 
-async function getPost(id: string): Promise<Post> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/${id}`)
+async function getData<T>(url: string): Promise<T> {
+  const res = await fetch(url)
   return res.json()
 }
 
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
-  const post = await getPost(id)
+  const post = await getData<Post>(`${process.env.NEXT_PUBLIC_API_URL}/posts/${id}`)
   return {
     title: `${post.title} | DJ`,
     description: post.body,
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function BlogPost({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const post = await getPost(id)
+  const post = await getData<Post>(`${process.env.NEXT_PUBLIC_API_URL}/posts/${id}`)
 
   return (
     <main className="min-h-screen bg-black text-white pt-24 px-6">
