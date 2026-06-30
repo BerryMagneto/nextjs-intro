@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 
+type FormStatus = 'idle' | 'loading' | 'success' | 'error'
+
 export default function Contact() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<FormStatus>('idle')
   const [errors, setErrors] = useState({ name: '', email: '', message: '' })
 
 function validate() {
@@ -41,25 +42,30 @@ function validate() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
+    if (!validate()) return
 
-    if (!validate()) {
-      setLoading(false)
-      return
+    setStatus('loading')
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message }),
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setStatus('success')
+      } else {
+        setStatus('error')
+      }
+    } catch (err) {
+      setStatus('error')
     }
-
-    const res = await fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, message }),
-    })
-
-    const data = await res.json()
-    if (data.success) setSubmitted(true)
-    setLoading(false)
   }
 
-  if (submitted) {
+  if (status === 'success') {
     return (
       <main className="min-h-screen bg-black text-white pt-24 px-6">
         <div className="max-w-2xl mx-auto py-16">
@@ -67,7 +73,7 @@ function validate() {
           <p className="text-gray-400 mb-8">Thanks for reaching out. I'll get back to you soon.</p>
           <button
             onClick={() => {
-              setSubmitted(false)
+              setStatus('idle')
               setName('')
               setEmail('')
               setMessage('')
@@ -86,6 +92,9 @@ function validate() {
       <div className="max-w-2xl mx-auto py-16">
         <h1 className="text-5xl font-bold mb-4">Contact</h1>
         <p className="text-gray-400 mb-12">Get in touch with me.</p>
+        {status === 'error' && (
+  <p className="text-red-400 text-sm mb-4">Something went wrong. Please try again.</p>
+)}
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <label className="text-sm text-gray-400">Name</label>
@@ -122,10 +131,10 @@ function validate() {
           </div>
           <button
             type="submit"
-            disabled={loading}
+            disabled={status === 'loading'}
             className="bg-[#00BFFF] text-black font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {loading ? 'Sending...' : 'Send Message'}
+            {status === 'loading' ? 'Sending...' : 'Send Message'}
           </button>
         </form>
       </div>
