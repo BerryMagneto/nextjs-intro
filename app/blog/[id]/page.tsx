@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
-
+type BlogPostParams = {
+  params: Promise<{ id: string }>
+}
 interface Post {
   id: number
   title: string
@@ -14,7 +16,7 @@ async function getData<T>(url: string): Promise<T> {
 }
 
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: BlogPostParams): Promise<Metadata> {
   const { id } = await params
   const post = await getData<Post>(`${process.env.NEXT_PUBLIC_API_URL}/posts/${id}`)
   return {
@@ -23,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 }
 
-export default async function BlogPost({ params }: { params: Promise<{ id: string }> }) {
+export default async function BlogPost({ params }: BlogPostParams) {
   const { id } = await params
   const post = await getData<Post>(`${process.env.NEXT_PUBLIC_API_URL}/posts/${id}`)
 
